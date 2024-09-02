@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog
 
-
+#Planner V1
 class WeeklyPlanner(tk.Tk):
     def __init__(self):
         super().__init__()
