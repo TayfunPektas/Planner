@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog
-
+from tkinter.ttk import *
 #Planner V1
 class WeeklyPlanner(tk.Tk):
     def __init__(self):
@@ -10,6 +10,7 @@ class WeeklyPlanner(tk.Tk):
         # self.geometry("800x450")
 
         self.task_id = 1  # To keep track of task IDs
+        self.row_id = 1
         self.grid_widgets = {}  # To store widgets in the grid
         self.selected_widget = None
         self.offset_x = 0  # X offset for dragging
@@ -24,17 +25,30 @@ class WeeklyPlanner(tk.Tk):
     def create_grid(self):
         # Create headers for days
         for col, day in enumerate(self.days):
-            label = tk.Label(self, text=day, borderwidth=1, relief="solid", padx=10, pady=10)
-            label.grid(row=0, column=col + 1, sticky="nsew")
+            label = tk.Label(self, text=day, borderwidth=0, relief="solid", padx=10, pady=10)
+            label.grid(row=0, column=col+1, sticky="nsew")
+            self.line_style = Style()
+            self.line_style.configure("Line.TSeparator", background="#ed3c16")
+            if not col == 7:
+                separator_v = Separator(self, orient="vertical", style='Line.TSeparator')
+                separator_v.grid(row=0, column=col+1, rowspan=1, columnspan=2, sticky="ns")
+            else:
+                pass
+
 
         # Create grid cells
         for row in range(1, len(self.time_slots) + 1):
             for col in range(1, len(self.days) + 1):
-                frame = tk.Frame(self, borderwidth=1, relief="solid", width=100, height=50)
+                frame = tk.Frame(self, borderwidth=0, relief="solid", width=100, height=50)
                 frame.grid(row=row, column=col, sticky="nsew")
+                
                 frame.bind("<Button-1>", self.on_frame_click)
                 self.grid_widgets[(row, col)] = frame
 
+                if col < len(self.days):
+                    separator_v = Separator(self, orient="vertical", style='Line.TSeparator')
+                    separator_v.grid(row=row, column=col, rowspan=1, columnspan=2, sticky="ns")
+        
     def create_task_management(self):
         # Add button for creating new tasks
         add_task_button = tk.Button(self, text="Add New Task", command=self.add_new_task)
@@ -47,42 +61,65 @@ class WeeklyPlanner(tk.Tk):
             # Find the first available row in the last column ("Tasks" column)
             task_column = len(self.days)  # Last column for tasks
             for row in range(1, len(self.time_slots) + 1):
+                
                 if not self.grid_widgets[(row, task_column)].winfo_children():
-                    self.create_task(task_name, (row, task_column))
+                    self.create_task(task_name, (self.row_id, task_column))
                     break
 
     def create_task(self, task_name, grid_position):
         # Create a new task as a draggable label
-        task = tk.Label(self, text=task_name, bg="lightyellow", padx=10, pady=5)
-        task.place(in_=self.grid_widgets[grid_position], relheight=1, relwidth=1)
+        task = tk.Label(self, text=task_name, bg="lightyellow", padx=20, pady=10, wraplength=100, justify="left")
+        task.place(in_=self.grid_widgets[grid_position], relheight=0.99, relwidth=0.97)
         task.bind("<Button-1>", self.on_task_click)
         task.bind("<B1-Motion>", self.on_task_drag)
         task.bind("<ButtonRelease-1>", self.on_task_release)
         self.task_id += 1
+        task_height = int(len(task_name))
+        font_size = int(task_height/11)
+        task.configure(font=("Arial", 12 - font_size), wraplength=100)
+        counter = 0
+        label_locations_all = []
+        label_locations = []
+        i = 1
+        for widget in self.winfo_children():
+            if widget.widgetName == "label":
+                counter += 1
+                label_locations = []
+                if counter > 8:
+                    print(self.winfo_children()[-1].place_info()["in"])
+                    fill_row= self.winfo_children()[-1].place_info()["in"].grid_info()['row']
+                    label_locations.append(fill_row)
+                    self.row_id = fill_row + 1
+        print(label_locations)               
+
 
     def on_task_click(self, event):
         # Store the clicked widget and calculate the offset
+        
         self.selected_widget = event.widget
-        self.offset_x = event.x
-        self.offset_y = event.y
-        self.selected_widget.lift()
 
+        self.offset_x = self.selected_widget.winfo_x()
+        self.offset_y = self.selected_widget.winfo_y()
+        
+        self.selected_widget.lift()
+        #print(self.selected_widget.winfo_reqheight(), self.selected_widget.winfo_reqwidth())
+        
     def on_task_drag(self, event):
         # Move the widget with the mouse, taking the offset into account
-        x = self.selected_widget.winfo_x() + event.x - self.offset_x
-        y = self.selected_widget.winfo_y() + event.y - self.offset_y
-        
-        #x = event.x
-        #y = event.y
-        print(x)
-        self.selected_widget.place(x=x, y=y)
+        x= self.winfo_pointerx()
+        y= self.winfo_pointery()
+       
+        window_x, window_y = self.winfo_rootx(), self.winfo_rooty()
+
+
+        self.selected_widget.place(x=x-window_x-self.offset_x, y=y-window_y-self.offset_y)
 
     def on_task_release(self, event):
         # Snap the widget to the closest grid cell
         closest_frame = self.get_closest_frame(event.x_root, event.y_root)
         if closest_frame:
             self.selected_widget.place_forget()  # Remove from the previous location
-            self.selected_widget.place(in_=closest_frame, relwidth=1, relheight=1)  # Place in the new frame
+            self.selected_widget.place(in_=closest_frame, relwidth=0.99, relheight=0.97)  # Place in the new frame
         self.selected_widget = None
 
     def get_closest_frame(self, x_root, y_root):
