@@ -67,9 +67,34 @@ class WeeklyPlanner(tk.Tk):
                     break
 
     def create_task(self, task_name, grid_position):
-        # Create a new task as a draggable label
         task = tk.Label(self, text=task_name, bg="lightyellow", padx=20, pady=10, wraplength=100, justify="left")
-        task.place(in_=self.grid_widgets[grid_position], relheight=0.99, relwidth=0.97)
+        counter = 0
+        counter_all = 0
+        label_locations_all = []
+        label_locations = []
+        i = 0
+        for widget in self.winfo_children():
+            counter_all += 1
+        difference = counter_all - 137
+        if difference == 0:
+            task.place(in_=self.grid_widgets[grid_position], relheight=0.99, relwidth=0.97)
+        else:
+            for x in range(0,difference):
+                if self.winfo_children()[136+x].place_info()["in"].grid_info()['column'] == 8:
+                    fill_row = self.winfo_children()[136+x].place_info()["in"].grid_info()['row']
+                    label_locations.append(fill_row)
+        print(label_locations)
+
+        for row in label_locations:
+            for x in range(1,8):
+                if not x in label_locations:
+                    #task = tk.Label(self, text=task_name, bg="lightyellow", padx=20, pady=10, wraplength=100, justify="left")
+                    task.place(in_=self.grid_widgets[x,8], relheight=0.99, relwidth=0.97)
+                    break
+
+        # Create a new task as a draggable label
+        
+        #
         task.bind("<Button-1>", self.on_task_click)
         task.bind("<B1-Motion>", self.on_task_drag)
         task.bind("<ButtonRelease-1>", self.on_task_release)
@@ -77,20 +102,7 @@ class WeeklyPlanner(tk.Tk):
         task_height = int(len(task_name))
         font_size = int(task_height/11)
         task.configure(font=("Arial", 12 - font_size), wraplength=100)
-        counter = 0
-        label_locations_all = []
-        label_locations = []
-        i = 1
-        for widget in self.winfo_children():
-            if widget.widgetName == "label":
-                counter += 1
-                label_locations = []
-                if counter > 8:
-                    print(self.winfo_children()[-1].place_info()["in"])
-                    fill_row= self.winfo_children()[-1].place_info()["in"].grid_info()['row']
-                    label_locations.append(fill_row)
-                    self.row_id = fill_row + 1
-        print(label_locations)               
+                      
 
 
     def on_task_click(self, event):
