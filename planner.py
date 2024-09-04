@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter.ttk import *
-#Planner V1
+import tkinter.font as tkFont
+import datetime
+#Planner V0.1.2
 class WeeklyPlanner(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -52,8 +54,37 @@ class WeeklyPlanner(tk.Tk):
     def create_task_management(self):
         # Add button for creating new tasks
         add_task_button = tk.Button(self, text="Add New Task", command=self.add_new_task)
-        add_task_button.grid(row=len(self.time_slots) + 1, column=0, columnspan=len(self.days) + 1)
+        #add_task_button.grid(row=len(self.time_slots) + 1, column=0, columnspan=len(self.days) + 1)
+        add_task_button.grid(row=len(self.time_slots) + 1, column=8)
+        add_left_button = tk.Button(self, text="←")
+        add_left_button.grid(row=len(self.time_slots) + 1, column=2, sticky="e")
+        current_year = datetime.datetime.now().year
+        total_weeks = datetime.date(current_year, 12, 28).isocalendar()[1]
+        weeks = [f"Week {week}" for week in range(1, total_weeks + 1)]
+        week_combobox = Combobox(self, values=weeks, width=10,state="readonly")
+        week_combobox.set(f"Week {datetime.datetime.now().isocalendar()[1]}") 
+        week_combobox.grid(row=len(self.time_slots) + 1, column=3, columnspan=1)
+        add_right_button = tk.Button(self, text="→")
+        add_right_button.grid(row=len(self.time_slots) + 1, column=4, sticky="w")
+        add_save_button = tk.Button(self, text="Save", command=self.save)
+        add_save_button.grid(row=len(self.time_slots) + 1, column=6)
 
+    def save(self):
+        
+        widgets_all = []
+        counter_label = 0
+        for widget in self.winfo_children():
+            if widget.widgetName == "label":
+                counter_label += 1
+                if counter_label > 8:
+                    label_widgets = []
+                    label_widgets.append(widget.cget("text"))
+                    label_widgets.append(widget.place_info()["in"].grid_info()['row'])
+                    label_widgets.append(widget.place_info()["in"].grid_info()['column'])
+                    label_widgets.append(widget.cget("bg"))
+                    label_widgets.append(tkFont.Font(font=widget.cget("font")).cget("overstrike"))
+                    widgets_all.append(label_widgets)
+        print(widgets_all)
     def add_new_task(self):
         # Ask the user for the task name
         task_name = simpledialog.askstring("New Task", "Enter task name:")
@@ -67,28 +98,30 @@ class WeeklyPlanner(tk.Tk):
                     break
 
     def create_task(self, task_name, grid_position):
+        for widget in self.winfo_children():
+            if widget.widgetName == "menu":
+                widget.destroy()
         task = tk.Label(self, text=task_name, bg="lightyellow", padx=20, pady=10, wraplength=100, justify="left")
-        counter = 0
         counter_all = 0
-        label_locations_all = []
         label_locations = []
         i = 0
+        #print(self.winfo_children())
         for widget in self.winfo_children():
             counter_all += 1
-        difference = counter_all - 137
+        difference = counter_all - 141
         if difference == 0:
             task.place(in_=self.grid_widgets[grid_position], relheight=0.99, relwidth=0.97)
         else:
             for x in range(0,difference):
-                if self.winfo_children()[136+x].place_info()["in"].grid_info()['column'] == 8:
-                    fill_row = self.winfo_children()[136+x].place_info()["in"].grid_info()['row']
+                if self.winfo_children()[140+x].place_info()["in"].grid_info()['column'] == 8:
+                    fill_row = self.winfo_children()[140+x].place_info()["in"].grid_info()['row']
                     label_locations.append(fill_row)
-        print(label_locations)
+                else:
+                    task.place(in_=self.grid_widgets[1,8], relheight=0.99, relwidth=0.97)
 
         for row in label_locations:
             for x in range(1,8):
                 if not x in label_locations:
-                    #task = tk.Label(self, text=task_name, bg="lightyellow", padx=20, pady=10, wraplength=100, justify="left")
                     task.place(in_=self.grid_widgets[x,8], relheight=0.99, relwidth=0.97)
                     break
 
@@ -96,6 +129,7 @@ class WeeklyPlanner(tk.Tk):
         
         #
         task.bind("<Button-1>", self.on_task_click)
+        task.bind("<Button-3>", lambda event: self.on_right_click(event, task))
         task.bind("<B1-Motion>", self.on_task_drag)
         task.bind("<ButtonRelease-1>", self.on_task_release)
         self.task_id += 1
@@ -104,6 +138,44 @@ class WeeklyPlanner(tk.Tk):
         task.configure(font=("Arial", 12 - font_size), wraplength=100)
                       
 
+    def on_right_click(self,event, task):
+        right_menu = tk.Menu(self, tearoff=0)
+        category_menu = tk.Menu(right_menu, tearoff=0)
+        right_menu.add_command(label="Set as Complete", command=lambda c="lightgray": self.select_complete(task,c))
+        right_menu.add_command(label="Set as Ongoing", command=lambda c="lightyellow": self.select_category(task,c))
+        category_menu.add_command(label="Urgent", command=lambda c="red": self.select_category(task,c))
+        category_menu.add_command(label="High", command=lambda c="OrangeRed2": self.select_category(task,c))
+        category_menu.add_command(label="Normal", command=lambda c="cyan2": self.select_category(task,c))
+        category_menu.add_command(label="Low", command=lambda c="gray66": self.select_category(task,c))
+        right_menu.add_cascade(label="Change Category", menu=category_menu)
+        right_menu.add_command(label="Edit Task", command=lambda: self.edit_task(task))
+        right_menu.add_command(label="Delete Task", command=lambda: self.delete_task(task))
+
+        right_menu.tk_popup(event.x_root, event.y_root)
+        
+    def select_category(self, task, color):
+        task.config(bg=color)
+        current_font = tkFont.Font(font=task.cget("font"))
+        current_font.configure(overstrike=False)
+        task.config(font=current_font)
+
+    def select_complete(self, task, color):
+        task.config(bg=color)
+        current_font = tkFont.Font(font=task.cget("font"))
+        current_font.configure(overstrike=True)
+        task.config(font=current_font)
+    
+    def edit_task(self, task):
+        pre_text = task.cget("text")
+        task_name = simpledialog.askstring("Edit Task", "Enter task name:", initialvalue=pre_text)
+        if task_name:
+            task.config(text=task_name)
+        task_height = int(len(task_name))
+        font_size = int(task_height/11)
+        task.configure(font=("Arial", 12 - font_size), wraplength=100)
+
+    def delete_task(self, task):
+        task.destroy()
 
     def on_task_click(self, event):
         # Store the clicked widget and calculate the offset
@@ -124,7 +196,7 @@ class WeeklyPlanner(tk.Tk):
         window_x, window_y = self.winfo_rootx(), self.winfo_rooty()
 
 
-        self.selected_widget.place(x=x-window_x-self.offset_x, y=y-window_y-self.offset_y)
+        self.selected_widget.place(x=x-window_x-self.offset_x-50, y=y-window_y-self.offset_y-25)
 
     def on_task_release(self, event):
         # Snap the widget to the closest grid cell
