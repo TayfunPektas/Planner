@@ -67,23 +67,47 @@ class WeeklyPlanner(tk.Tk):
         current_year = datetime.datetime.now().year
         total_weeks = datetime.date(current_year, 12, 28).isocalendar()[1]
         weeks = [f"Week {week}" for week in range(1, total_weeks + 1)]
-        week_combobox = Combobox(self, values=weeks, width=10,state="readonly", postcommand=self.on_week_combobox)
+        week_combobox = Combobox(self, values=weeks, width=10,state="readonly", postcommand=self.on_selection)
         week_combobox.grid(row=len(self.time_slots) + 1, column=3, columnspan=1)
         week_combobox.set(f"Week {datetime.datetime.now().isocalendar()[1]}") 
+        week_combobox.bind("<<ComboboxSelected>>", self.on_week_combobox)
         add_right_button = tk.Button(self, text="→", command=self.right_button)
         add_right_button.grid(row=len(self.time_slots) + 1, column=4, sticky="w")
         add_save_button = tk.Button(self, text="Save", command=self.save)
         add_save_button.grid(row=len(self.time_slots) + 1, column=6)
-        year_combobox = Combobox(self, values=["2024","2025","2026"], width=10,state="readonly")
+        year_combobox = Combobox(self, values=["2024","2025","2026"], width=10,state="readonly", postcommand=self.on_selection)
         year_combobox.set(datetime.datetime.now().year)
         year_combobox.grid(row=len(self.time_slots) + 1, column=5)
+        year_combobox.bind("<<ComboboxSelected>>", self.on_year_combobox)
 
-    def on_week_combobox(self):
-        print(week_combobox.get())
+    def on_selection(self):
+        self.save()
+
+    def on_week_combobox(self, event):
+        counter = 0
+        for widget in self.winfo_children():
+            if widget.widgetName == "label":
+                counter += 1
+                if counter > 8:
+                    widget.destroy()
+        current_week = int(week_combobox.get().split(" ")[-1])
+        current_year = int(year_combobox.get().split(" ")[-1])
+        self.set_labels(current_week, current_year)
+
+    def on_year_combobox(self, event):
+        counter = 0
+        for widget in self.winfo_children():
+            if widget.widgetName == "label":
+                counter += 1
+                if counter > 8:
+                    widget.destroy()
+        current_year = int(year_combobox.get().split(" ")[-1])
+        current_week = int(week_combobox.get().split(" ")[-1])
+        self.set_labels(current_week, current_year)
         
-    def set_labels(self, week):
-        if os.path.exists("{}-{}.txt".format(f"Week {week}", year_combobox.get())):
-            with open("{}-{}.txt".format(week_combobox.get(), year_combobox.get())) as load_file:
+    def set_labels(self, week, year):
+        if os.path.exists("database\\{}-{}.txt".format(f"Week {week}", year)):
+            with open("database\\{}-{}.txt".format(week_combobox.get(), year)) as load_file:
                 date_array = json.load(load_file)
             for label in date_array:
                 date_label = tk.Label(self, text=label[0], bg=label[2], padx=20, pady=10, wraplength=100, justify="center")
@@ -114,7 +138,8 @@ class WeeklyPlanner(tk.Tk):
                     widget.destroy()
         pre_week = int(week_combobox.get().split(" ")[-1]) - 1
         week_combobox.set(f"Week {pre_week}")
-        self.set_labels(pre_week)
+        current_year = int(year_combobox.get().split(" ")[-1])
+        self.set_labels(pre_week, current_year)
 
     def right_button(self):
         self.save()
@@ -126,7 +151,8 @@ class WeeklyPlanner(tk.Tk):
                     widget.destroy()
         next_week = int(week_combobox.get().split(" ")[-1]) + 1
         week_combobox.set(f"Week {next_week}")
-        self.set_labels(next_week)
+        current_year = int(year_combobox.get().split(" ")[-1])
+        self.set_labels(next_week, current_year)
                 
     def save(self):
         
@@ -142,12 +168,12 @@ class WeeklyPlanner(tk.Tk):
                     label_widgets.append(widget.cget("bg"))
                     label_widgets.append(tkFont.Font(font=widget.cget("font")).cget("overstrike"))
                     widgets_all.append(label_widgets)
-        with open("{}-{}.txt".format(week_combobox.get(), year_combobox.get()),"w") as save_file:
+        with open("database\\{}-{}.txt".format(week_combobox.get(), year_combobox.get()),"w") as save_file:
             json.dump(widgets_all, save_file)
 
     def initial_load(self):
-        if os.path.exists("{}-{}.txt".format(f"Week {datetime.datetime.now().isocalendar()[1]}", datetime.datetime.now().year)):
-            with open("{}-{}.txt".format(f"Week {datetime.datetime.now().isocalendar()[1]}", datetime.datetime.now().year)) as load_file:
+        if os.path.exists("database\\{}-{}.txt".format(f"Week {datetime.datetime.now().isocalendar()[1]}", datetime.datetime.now().year)):
+            with open("database\\{}-{}.txt".format(f"Week {datetime.datetime.now().isocalendar()[1]}", datetime.datetime.now().year)) as load_file:
                 initial_array = json.load(load_file)
             for label in initial_array:
                 initial_label = tk.Label(self, text=label[0], bg=label[2], padx=20, pady=10, wraplength=100, justify="center")
