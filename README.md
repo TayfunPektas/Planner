@@ -2,7 +2,7 @@
 
 This repository contains a weekly planner template designed to help business owners organize tasks efficiently. The planner divides tasks by day and urgency, ensuring a balanced approach to managing operations, meetings, and personal growth.
 
-![Weekly Planner Screenshot](Weekly Planner.PNG)
+![Weekly Planner Screenshot](weekly_planner.png)
 
 ## Features
 
