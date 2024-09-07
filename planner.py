@@ -292,7 +292,7 @@ class WeeklyPlanner(tk.Tk):
         if task_name:
             task.config(text=task_name)
         task_height = int(len(task_name))
-        font_size = int(task_height/11)
+        font_size = int(task_height/9)
         task.configure(font=("Arial", 12 - font_size), wraplength=100)
 
     def delete_task(self, task):
