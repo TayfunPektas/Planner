@@ -28,4 +28,6 @@ This repository contains a weekly planner template designed to help everyone org
 If you'd like to contribute to this project, feel free to open an issue or submit a pull request. Your ideas and improvements are welcome!
 
 
+## Youtube Tutuorials
 
+https://www.youtube.com/playlist?list=PLZAz6XqNmSZBn5ilIrJyY3gB9z-VRQKb_
