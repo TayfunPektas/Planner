@@ -30,4 +30,5 @@ If you'd like to contribute to this project, feel free to open an issue or submi
 
 ## Youtube Tutuorials
 
-https://www.youtube.com/playlist?list=PLZAz6XqNmSZBn5ilIrJyY3gB9z-VRQKb_
+<https://www.youtube.com/playlist?list=PLZAz6XqNmSZBn5ilIrJyY3gB9z-VRQKb_>
+
