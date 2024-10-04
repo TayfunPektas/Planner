@@ -2,8 +2,8 @@
 
 This repository contains a weekly planner template designed to help everyone organize tasks efficiently. The planner divides tasks by day and urgency, ensuring a balanced approach to managing operations, meetings, and personal growth.
 
-![Weekly Planner Screenshot](weekly_planner.png)
-![Weekly Planner Screenshot](weekly_planner.png)
+![Weekly Planner Screenshot](weekly_planner_V018.png)
+
 ## Features
 
 - **Task Organization**: Plan tasks for each day of the week.
