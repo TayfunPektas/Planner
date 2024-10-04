@@ -9,7 +9,8 @@ This repository contains a weekly planner template designed to help everyone org
 - **Task Organization**: Plan tasks for each day of the week.
 - **Urgency Categorization**: Tasks are categorized as Urgent, High, Normal, or Low, allowing for priority management.
 - **Weekly Overview**: Get a comprehensive view of weekly tasks at a glance.
-- **Add New Tasks**: Add new tasks to tasks column and drag and drop them to desired day.
+- **Add New Tasks**: Add new tasks to the desired day.
+- **ScrollDown**: Keep scrolling down and if necessary add new rows.
 - **Current Week**: Planner opens with the current week.
 - **Edit Task Name**: You can change task name by right click with "edit task".
 
